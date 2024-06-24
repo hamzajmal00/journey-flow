@@ -63,7 +63,8 @@ export default function ToolsSidebar() {
         background: 'linear-gradient(179.06deg, #0081B0 -0.74%, #000D22 62.1%)',
         position: 'fixed',
         right: '0px',
-        top: '95px',
+        top: '50%',
+        transform: 'translate(0%, -50%)',
       }}
     >
       <div className=''>

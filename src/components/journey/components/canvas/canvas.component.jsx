@@ -1,10 +1,14 @@
 // src/components/Canvas.jsx
 import ConnectArrowIcon from '@/components/common/icons/connect-arrow.icon';
 import DeleteIcon from '@/components/common/icons/delete.icon';
+import EmailIcon from '@/components/common/icons/email.icon';
 import GoogleIcon from '@/components/common/icons/google.icon';
 import InstaIcon from '@/components/common/icons/insta.icon';
+import MessageIcon from '@/components/common/icons/message.icon';
+import PhoneIcon from '@/components/common/icons/phone.icon';
 import WhatsappIcon from '@/components/common/icons/whatsapp.icon';
 import XIcon from '@/components/common/icons/x.icon';
+import YoutubeIcon from '@/components/common/icons/youtube.icon';
 import React, { useState, useRef, useEffect } from 'react';
 
 // Mapping of element types to their respective icons
@@ -13,6 +17,10 @@ const elementIcons = {
   x: <XIcon />,
   instagram: <InstaIcon />,
   whatsapp: <WhatsappIcon />,
+  phone: <PhoneIcon />,
+  message: <MessageIcon />,
+  youtube: <YoutubeIcon />,
+  email: <EmailIcon />,
   // Add more element types and their icons here
 };
 
@@ -197,6 +205,7 @@ const Canvas = () => {
         overflow: 'auto',
         userSelect: 'none', // Prevent text selection while moving elements
         background: "url('/assets/images/canvas-bg.png')",
+        cursor: isConnecting ? 'crosshair' : 'default',
       }}
     >
       <svg

@@ -9,7 +9,7 @@ export default function ViewJourney() {
     <div className=''>
       <Toolbar />
 
-      <div style={{ display: 'flex', position: 'relative' }}>
+      <div style={{ display: 'flex', height: '100%', position: 'relative' }}>
         <Sidebar />
         <Canvas />
         <ToolsSidebar />
