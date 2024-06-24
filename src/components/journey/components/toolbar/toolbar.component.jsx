@@ -11,8 +11,8 @@ import React from 'react';
 
 export default function Toolbar({ onZoomIn, onZoomOut, onUndo, onRedo }) {
   return (
-    <div className='tw-w-[95%] tw-mx-5 tw-fixed tw-top-5 tw-z-10 tw-h-12 tw-gap-0 tw-justify-between tw-opacity-[0px] tw-flex'>
-      <div className='left-items tw-flex  tw-w-[410px] tw-h-12 tw-gap-[19px] tw-opacity-[0px] tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
+    <div className='tw-w-[95%] tw-mx-5 tw-fixed tw-top-5 tw-z-10 tw-h-12 tw-gap-0 tw-justify-between  tw-flex'>
+      <div className='left-items tw-flex  tw-w-[410px] tw-h-12 tw-gap-[19px]  tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
         <div className='tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-[#475467] tw-border-r-[#CDCCD7] tw-border-r tw-border-solid tw-pr-4'>
           Mahontech
         </div>
@@ -33,7 +33,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onUndo, onRedo }) {
         </div>
       </div>
       <div className='right-items tw-flex tw-gap-4'>
-        <div className='  tw-h-12 tw-gap-[19px]  tw-opacity-[0px] tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
+        <div className='  tw-h-12 tw-gap-[19px]   tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
           <div className=' tw-flex tw-gap-4'>
             <div className='hover:tw-cursor-pointer'>
               <RedoIcon />
@@ -43,7 +43,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onUndo, onRedo }) {
             </div>
           </div>
         </div>
-        <div className='  tw-flex tw-items-center tw-h-12 tw-gap-[19px]  tw-opacity-[0px] tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
+        <div className='  tw-flex tw-items-center tw-h-12 tw-gap-[19px]   tw-border tw-shadow-[0px_0px_17px_0px_#0000000F] tw-bg-white tw-px-4 tw-py-3 tw-rounded-[8px] tw-border-[0px_0px] tw-border-solid tw-border-[#D0D5DD]'>
           <div className='hover:tw-cursor-pointer'>
             <MinusIcon />
           </div>
@@ -57,7 +57,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onUndo, onRedo }) {
             {' '}
             Discard
           </div>
-          <div className='hover:tw-cursor-pointer tw-w-[72px] tw-h-[34px] tw-gap-2.5 tw-opacity-[0px] tw-bg-[#021133] tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-white tw-px-4 tw-py-1 tw-rounded-[6px]'>
+          <div className='hover:tw-cursor-pointer tw-w-[72px] tw-h-[34px] tw-gap-2.5  tw-bg-[#021133] tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-white tw-px-4 tw-py-1 tw-rounded-[6px]'>
             Save
           </div>
         </div>
