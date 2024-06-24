@@ -1,4 +1,6 @@
 // src/components/Canvas.jsx
+import ConnectArrowIcon from '@/components/common/icons/connect-arrow.icon';
+import DeleteIcon from '@/components/common/icons/delete.icon';
 import GoogleIcon from '@/components/common/icons/google.icon';
 import InstaIcon from '@/components/common/icons/insta.icon';
 import WhatsappIcon from '@/components/common/icons/whatsapp.icon';
@@ -189,7 +191,7 @@ const Canvas = () => {
         position: 'relative',
         border: '1px solid #ddd',
         height: '100vh',
-        width: '100vw',
+        width: '100%',
         transform: `scale(${zoom})`,
         transformOrigin: '0 0',
         overflow: 'auto',
@@ -290,6 +292,7 @@ const Canvas = () => {
           key={element.id}
           onMouseDown={(event) => handleMouseDown(event, element.id)}
           onClick={(event) => handleElementClick(event, element.id)}
+          className='parent'
           style={{
             minWidth: '149.42px',
             position: 'absolute',
@@ -363,30 +366,30 @@ const Canvas = () => {
             onClick={(event) => handleArrowClick(event, element.id)}
             style={{
               position: 'absolute',
-              right: '-10px',
+              right: '-20px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '10px',
-              height: '10px',
-              backgroundColor: 'black',
-              borderRadius: '50%',
+
               cursor: 'pointer',
             }}
-          />
+            className='child1'
+          >
+            <ConnectArrowIcon />
+          </div>
           <div
             onClick={(event) => handleDeleteElement(event, element.id)}
             style={{
               position: 'absolute',
-              left: '-10px',
+              left: '-25px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '10px',
-              height: '10px',
-              backgroundColor: 'red',
-              borderRadius: '50%',
+
               cursor: 'pointer',
             }}
-          />
+            className='child2'
+          >
+            <DeleteIcon />
+          </div>
         </div>
       ))}
     </div>

@@ -30,3 +30,20 @@ body {
     text-wrap: balance;
   }
 }
+.parent {
+  position: relative;
+}
+.child1,
+.child2 {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  -webkit-transition: opacity 0.5s ease;
+  -moz-transition: opacity 0.5s ease;
+  -ms-transition: opacity 0.5s ease;
+  -o-transition: opacity 0.5s ease;
+}
+
+.parent:hover .child1,
+.parent:hover .child2 {
+  opacity: 1;
+}
