@@ -9,6 +9,7 @@ import PhoneIcon from '@/components/common/icons/phone.icon';
 import WhatsappIcon from '@/components/common/icons/whatsapp.icon';
 import XIcon from '@/components/common/icons/x.icon';
 import YoutubeIcon from '@/components/common/icons/youtube.icon';
+import { TextField } from '@mui/material';
 import React, { useState, useRef, useEffect } from 'react';
 
 // Mapping of element types to their respective icons
@@ -33,7 +34,33 @@ const Canvas = () => {
   const [zoom, setZoom] = useState(1);
   const [editableElement, setEditableElement] = useState(null);
   const [editableConnection, setEditableConnection] = useState(null);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [newLabel, setNewLabel] = useState('');
   const canvasRef = useRef(null);
+
+  const handleLabelClick = (event, connection) => {
+    console.log('here');
+    event.stopPropagation();
+    setPopupPosition({ x: event.clientX, y: event.clientY });
+    setPopupVisible(true);
+    setEditableConnection(connection.id);
+    setNewLabel(connection.label);
+  };
+
+  const handleLabelChange = (event) => {
+    setNewLabel(event.target.value);
+  };
+
+  const handleLabelSave = () => {
+    setConnections((conns) =>
+      conns.map((conn) =>
+        conn.id === editableConnection ? { ...conn, label: newLabel } : conn
+      )
+    );
+    setPopupVisible(false);
+    setEditableConnection(null);
+  };
 
   // Handle drop event to add new elements to the canvas
   const handleDrop = (event) => {
@@ -208,6 +235,61 @@ const Canvas = () => {
         cursor: isConnecting ? 'crosshair' : 'default',
       }}
     >
+      {popupVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            left: popupPosition.x,
+            top: popupPosition.y,
+            marginTop: '20px',
+            zIndex: 3,
+          }}
+        >
+          <div className=' tw-w-[300px] tw-bg-white tw-h-[200px] tw-gap-0 tw-border tw-shadow-[0px_0px_10px_0px_#0000001F] tw-rounded-xl tw-border-solid tw-border-[#D0D5DD] tw-left-[509px] tw-top-[140px]'>
+            <div className='tw-h-12 tw-px-5 tw-flex tw-items-center tw-justify-between tw-rounded-[12px_12px_0px_0px] tw-bg-[#021133] tw-pl-5 tw-pr-[20px,] tw-py-[12px,]'>
+              <div className='tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-white'>
+                Lable Editions
+              </div>
+              <div
+                onClick={() => setPopupVisible(false)}
+                className='hover:tw-cursor-pointer'
+              >
+                <svg
+                  width='24'
+                  height='24'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  xmlns='http://www.w3.org/2000/svg'
+                >
+                  <path
+                    d='M18 6L6 18M6 6L18 18'
+                    stroke='white'
+                    stroke-width='2'
+                    stroke-linecap='round'
+                    stroke-linejoin='round'
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className='tw-p-4 '>
+              <TextField
+                className='tw-w-full '
+                label='lable text'
+                value={newLabel}
+                onChange={handleLabelChange}
+                InputProps={{ style: { height: '44px' } }}
+              />
+              {/* <button onClick={handleLabelSave}>Save</button> */}
+              <div
+                onClick={() => handleLabelSave()}
+                className='tw-w-[111px] tw-mt-3 tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+              >
+                Save
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <svg
         style={{
           position: 'absolute',
@@ -266,9 +348,10 @@ const Canvas = () => {
                 y={midPoint.y - 10}
                 width='100'
                 height='20'
-                style={{ overflow: 'visible' }}
+                style={{ overflow: 'visible', pointerEvents: 'all' }}
               >
                 <div
+                  onClick={(event) => handleLabelClick(event, connection)}
                   onDoubleClick={(event) =>
                     handleConnectionDoubleClick(event, connection.id)
                   }

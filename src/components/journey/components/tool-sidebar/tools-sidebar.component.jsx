@@ -11,7 +11,7 @@ import XSidebarIcon from '@/components/common/icons/x-sidebar.icon';
 import YoutubeSidebarIcon from '@/components/common/icons/youtube-sidebar.icon';
 import React from 'react';
 
-export default function ToolsSidebar() {
+export default function ToolsSidebar({ mergePopUpHandler }) {
   const handleDragStart = (event, type) => {
     event.dataTransfer.setData('application/reactflow', type);
     event.dataTransfer.effectAllowed = 'move';
@@ -83,8 +83,9 @@ export default function ToolsSidebar() {
           <DoubleTriggerIcon />
         </div>
         <div
-          draggable
-          onDragStart={(event) => handleDragStart(event, 'single-trigger')}
+          // draggable
+          // onDragStart={(event) => handleDragStart(event, 'single-trigger')}
+          onClick={() => mergePopUpHandler()}
           style={{
             padding: '8px',
             margin: '4px',
