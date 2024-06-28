@@ -83,9 +83,9 @@ export default function ToolsSidebar({ mergePopUpHandler }) {
           <DoubleTriggerIcon />
         </div>
         <div
-          // draggable
-          // onDragStart={(event) => handleDragStart(event, 'single-trigger')}
-          onClick={() => mergePopUpHandler()}
+          draggable
+          onDragStart={(event) => handleDragStart(event, 'single-trigger')}
+          // onClick={() => mergePopUpHandler()}
           style={{
             padding: '8px',
             margin: '4px',

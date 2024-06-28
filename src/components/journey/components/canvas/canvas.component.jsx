@@ -10,6 +10,7 @@ import WhatsappIcon from '@/components/common/icons/whatsapp.icon';
 import XIcon from '@/components/common/icons/x.icon';
 import YoutubeIcon from '@/components/common/icons/youtube.icon';
 import { TextField } from '@mui/material';
+import shadows from '@mui/material/styles/shadows';
 import React, { useState, useRef, useEffect } from 'react';
 
 // Mapping of element types to their respective icons
@@ -35,32 +36,10 @@ const Canvas = () => {
   const [editableElement, setEditableElement] = useState(null);
   const [editableConnection, setEditableConnection] = useState(null);
   const [popupVisible, setPopupVisible] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  const [newLabel, setNewLabel] = useState('');
+  const [popupContent, setPopupContent] = useState(null);
+  const [selectedElement1, setSelectedElement1] = useState(null);
+  const [selectedElement2, setSelectedElement2] = useState(null);
   const canvasRef = useRef(null);
-
-  const handleLabelClick = (event, connection) => {
-    console.log('here');
-    event.stopPropagation();
-    setPopupPosition({ x: event.clientX, y: event.clientY });
-    setPopupVisible(true);
-    setEditableConnection(connection.id);
-    setNewLabel(connection.label);
-  };
-
-  const handleLabelChange = (event) => {
-    setNewLabel(event.target.value);
-  };
-
-  const handleLabelSave = () => {
-    setConnections((conns) =>
-      conns.map((conn) =>
-        conn.id === editableConnection ? { ...conn, label: newLabel } : conn
-      )
-    );
-    setPopupVisible(false);
-    setEditableConnection(null);
-  };
 
   // Handle drop event to add new elements to the canvas
   const handleDrop = (event) => {
@@ -83,6 +62,16 @@ const Canvas = () => {
 
     setElements((els) => [...els, newElement]);
   };
+  console.log(
+    elements,
+    'elements,',
+    connections,
+    'connections',
+    draggingElement,
+    'draggingElement',
+    connectingElement,
+    'connectingElement'
+  );
 
   // Handle drag over event to allow dropping
   const handleDragOver = (event) => {
@@ -122,7 +111,77 @@ const Canvas = () => {
 
   // Handle element click event to start or finish a connection
   const handleElementClick = (event, id) => {
+    const element = elements.find((el) => el.id === id);
+    if (!element) return;
+
     if (isConnecting) {
+      const sourceElement = elements.find((el) => el.id === connectingElement);
+      const targetConnections = connections.filter(
+        (conn) => conn.target === id
+      );
+      const sourceConnections = connections.filter(
+        (conn) => conn.source === connectingElement
+      );
+
+      // Check if the target element is already connected
+      if (targetConnections.length > 0) {
+        alert('Element is already connected to another element');
+        setConnectingElement(null);
+        setIsConnecting(false);
+        return;
+      }
+
+      // Ensure 'single-trigger' and 'double-trigger' cannot connect with each other
+      if (
+        (sourceElement.type === 'single-trigger' &&
+          element.type === 'double-trigger') ||
+        (sourceElement.type === 'double-trigger' &&
+          element.type === 'single-trigger')
+      ) {
+        alert(
+          'Single-trigger and Double-trigger cannot connect with each other'
+        );
+        setConnectingElement(null);
+        setIsConnecting(false);
+        return;
+      }
+      // Allow 'single-trigger' and 'double-trigger' to connect with any type
+      if (
+        sourceElement.type === 'single-trigger' ||
+        sourceElement.type === 'double-trigger'
+      ) {
+        // Check connection limits for 'single-trigger' and 'double-trigger'
+        if (
+          sourceElement.type === 'single-trigger' &&
+          sourceConnections.length >= 4
+        ) {
+          alert('Single-trigger can only connect with two elements');
+          setConnectingElement(null);
+          setIsConnecting(false);
+          return;
+        }
+        if (
+          sourceElement.type === 'double-trigger' &&
+          sourceConnections.length >= 2
+        ) {
+          alert('Double-trigger can only connect with three elements');
+          setConnectingElement(null);
+          setIsConnecting(false);
+          return;
+        }
+      } else {
+        // Ensure other types can only connect with 'single-trigger' and 'double-trigger'
+        if (
+          // element.type !== 'single-trigger' &&
+          element.type !== 'double-trigger'
+        ) {
+          alert('Connection not allowed');
+          setConnectingElement(null);
+          setIsConnecting(false);
+          return;
+        }
+      }
+
       // Finish the connection
       const newConnection = {
         id: `${+new Date()}`,
@@ -134,9 +193,52 @@ const Canvas = () => {
       setConnections((conns) => [...conns, newConnection]);
       setConnectingElement(null);
       setIsConnecting(false);
+
+      setPopupContent({
+        id: connectingElement, // Ensure id is set correctly
+        type: element.type,
+        heading: element.heading,
+        subheading: element.subheading,
+      });
+      setPopupVisible(true);
+    } else {
+      // Show popup with content based on element type
+      const element = elements.find((el) => el.id === id);
+      if (element) {
+        setPopupContent({
+          id: element.id, // Ensure id is set correctly
+          type: element.type,
+          heading: element.heading,
+          subheading: element.subheading,
+        });
+        setPopupVisible(true);
+      }
     }
   };
 
+  const handleSave = () => {
+    if (popupContent.type === 'single-trigger') {
+      const newConnections = [];
+      if (selectedElement1) {
+        newConnections.push({
+          id: `${+new Date()}`,
+          source: popupContent.id, // Ensure source is set correctly
+          target: selectedElement1,
+          label: ' ', // Default label, you can customize this
+        });
+      }
+      if (selectedElement2) {
+        newConnections.push({
+          id: `${+new Date()}`,
+          source: popupContent.id, // Ensure source is set correctly
+          target: selectedElement2,
+          label: ' ', // Default label, you can customize this
+        });
+      }
+      setConnections((conns) => [...conns, ...newConnections]);
+    }
+    setPopupVisible(false);
+  };
   // Handle arrow click event to start a connection
   const handleArrowClick = (event, id) => {
     event.stopPropagation();
@@ -162,12 +264,6 @@ const Canvas = () => {
   // Handle blur event to stop editing an element
   const handleBlur = () => {
     setEditableElement(null);
-  };
-
-  // Handle double click event to make a connection label editable
-  const handleConnectionDoubleClick = (event, id) => {
-    event.stopPropagation();
-    setEditableConnection(id);
   };
 
   // Handle blur event to stop editing a connection label
@@ -239,10 +335,11 @@ const Canvas = () => {
         <div
           style={{
             position: 'absolute',
-            left: popupPosition.x,
-            top: popupPosition.y,
             marginTop: '20px',
             zIndex: 3,
+            top: '50%',
+            left: ' 50%',
+            transform: 'translate(-50%, -50%)',
           }}
         >
           <div className=' tw-w-[300px] tw-bg-white tw-h-[200px] tw-gap-0 tw-border tw-shadow-[0px_0px_10px_0px_#0000001F] tw-rounded-xl tw-border-solid tw-border-[#D0D5DD] tw-left-[509px] tw-top-[140px]'>
@@ -272,20 +369,55 @@ const Canvas = () => {
               </div>
             </div>
             <div className='tw-p-4 '>
-              <TextField
-                className='tw-w-full '
-                label='lable text'
-                value={newLabel}
-                onChange={handleLabelChange}
-                InputProps={{ style: { height: '44px' } }}
-              />
+              <div>Type: {popupContent?.type}</div>
+              <div>Heading: {popupContent?.heading}</div>
+              <div>Subheading: {popupContent?.subheading}</div>
               {/* <button onClick={handleLabelSave}>Save</button> */}
-              <div
-                onClick={() => handleLabelSave()}
-                className='tw-w-[111px] tw-mt-3 tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
-              >
-                Save
-              </div>
+              {popupContent.type === 'single-trigger' && (
+                <>
+                  <div>
+                    <label>Select Element 1:</label>
+                    <select
+                      value={selectedElement1}
+                      onChange={(e) => setSelectedElement1(e.target.value)}
+                    >
+                      <option value=''>Select an element</option>
+                      {elements
+                        .filter(
+                          (el) =>
+                            el.id !== popupContent.id &&
+                            el.id !== selectedElement2
+                        )
+                        .map((el) => (
+                          <option key={el.id} value={el.id}>
+                            {el.heading}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Select Element 2:</label>
+                    <select
+                      value={selectedElement2}
+                      onChange={(e) => setSelectedElement2(e.target.value)}
+                    >
+                      <option value=''>Select an element</option>
+                      {elements
+                        .filter(
+                          (el) =>
+                            el.id !== popupContent.id &&
+                            el.id !== selectedElement1
+                        )
+                        .map((el) => (
+                          <option key={el.id} value={el.id}>
+                            {el.heading}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </>
+              )}
+              <button onClick={handleSave}>sssss</button>
             </div>
           </div>
         </div>
@@ -351,10 +483,10 @@ const Canvas = () => {
                 style={{ overflow: 'visible', pointerEvents: 'all' }}
               >
                 <div
-                  onClick={(event) => handleLabelClick(event, connection)}
-                  onDoubleClick={(event) =>
-                    handleConnectionDoubleClick(event, connection.id)
-                  }
+                  // onClick={(event) => handleLabelClick(event, connection)}
+                  // onDoubleClick={(event) =>
+                  //   handleConnectionDoubleClick(event, connection.id)
+                  // }
                   contentEditable={
                     editableConnection === connection.id ? 'true' : 'false'
                   }
