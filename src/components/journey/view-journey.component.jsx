@@ -70,7 +70,7 @@ export default function ViewJourney() {
           <Canvas />
           <ToolsSidebar mergePopUpHandler={mergePopUpHandler} />
         </div>
-        {showPopup && (
+        {false && (
           <div className='tw-absolute tw-top-[20%] tw-right-[10%]'>
             <div className=' tw-w-[817px] tw-bg-white tw-h-[410px] tw-gap-0 tw-border tw-shadow-[0px_0px_10px_0px_#0000001F] tw-rounded-xl tw-border-solid tw-border-[#D0D5DD] tw-left-[509px] tw-top-[140px]'>
               <div className='tw-h-12 tw-px-5 tw-flex tw-items-center tw-justify-between tw-rounded-[12px_12px_0px_0px] tw-bg-[#021133] tw-pl-5 tw-pr-[20px,] tw-py-[12px,]'>
@@ -126,7 +126,9 @@ export default function ViewJourney() {
                     <TextField
                       className='tw-w-[547px] '
                       label='Enter wait Period'
-                      InputProps={{ style: { height: '44px' } }}
+                      InputProps={{
+                        style: { height: '46px', marginTop: '3px' },
+                      }}
                     />
                   </div>
                   <div>

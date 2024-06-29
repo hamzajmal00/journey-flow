@@ -47,3 +47,6 @@ body {
 .parent:hover .child2 {
   opacity: 1;
 }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+  background-color: #0f163cfa !important;
+}
