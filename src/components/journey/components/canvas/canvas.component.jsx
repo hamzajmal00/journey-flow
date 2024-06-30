@@ -9,13 +9,21 @@ import PhoneIcon from '@/components/common/icons/phone.icon';
 import WhatsappIcon from '@/components/common/icons/whatsapp.icon';
 import XIcon from '@/components/common/icons/x.icon';
 import YoutubeIcon from '@/components/common/icons/youtube.icon';
-import { FormControl, MenuItem, Select, TextField } from '@mui/material';
+import {
+  FormControl,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+} from '@mui/material';
 import shadows from '@mui/material/styles/shadows';
 import { MobileTimePicker } from '@mui/x-date-pickers';
 import { DemoItem } from '@mui/x-date-pickers/internals/demo';
 import React, { useState, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
+import SwitchIcon from '@/components/common/icons/switch.icon';
+import MergeIcon from '@/components/common/icons/merge.icon';
 
 // Mapping of element types to their respective icons
 const elementIcons = {
@@ -27,6 +35,8 @@ const elementIcons = {
   message: <MessageIcon />,
   youtube: <YoutubeIcon />,
   email: <EmailIcon />,
+  'double-trigger': <SwitchIcon />,
+  'single-trigger': <MergeIcon />,
   // Add more element types and their icons here
 };
 const ITEM_HEIGHT = 48;
@@ -51,6 +61,7 @@ const googleOptionsStatic = ['1 google', '2 google', '3 google'];
 const instaOptionsStatic = ['1 insta', '2 insta', '3 insta'];
 const messageOptionsStatic = ['1 message', '2 message', '3 message'];
 const youtubeOptionsStatic = ['1 youtube', '2 youtube', '3 youtube'];
+const names = ['Oliver Hansen', 'Van Henry', 'April Tucker'];
 
 const Canvas = () => {
   const [elements, setElements] = useState([]);
@@ -66,20 +77,37 @@ const Canvas = () => {
   const [selectedElement1, setSelectedElement1] = useState(null);
   const [selectedElement2, setSelectedElement2] = useState(null);
   const [newLabel, setNewLabel] = useState('');
-  const [whatsappOptions, setWhatsappOptions] = useState('');
-  const [emailOptions, setEmailOptions] = useState('');
-  const [phoneOptions, setPhoneOptions] = useState('');
-  const [xOptions, setXOptions] = useState('');
-  const [googleOptions, setGoogleOptions] = useState('');
-  const [instaOptions, setInstaOptions] = useState('');
-  const [messageOptions, setMessageOptions] = useState('');
-  const [youtubeOptions, setYoutubeOptions] = useState('');
+  const [mergeLabel, setMergeLabel] = useState(null);
+  const [whatsappOptions, setWhatsappOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
 
-  const handleChangeElementSelect = (event, setOptions) => {
-    const { value, dataset } = event.target;
-    // const index = parseInt(dataset.index); // Get the index of the input field
-    setOptions(value);
-  };
+  const [emailOptions, setEmailOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
+  const [phoneOptions, setPhoneOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
+  const [xOptions, setXOptions] = useState({ heading: '', subheading: '' });
+  const [googleOptions, setGoogleOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
+  const [instaOptions, setInstaOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
+  const [messageOptions, setMessageOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
+  const [youtubeOptions, setYoutubeOptions] = useState({
+    heading: '',
+    subheading: '',
+  });
 
   // double trigger popup
   const [waitPeriod, setWaitPeriod] = useState('');
@@ -87,6 +115,8 @@ const Canvas = () => {
   const [groups, setGroups] = useState([
     { id: 1, groupValue: '', audianceValue: '' },
   ]);
+
+  const targetOptions = groups.map((group) => group.groupValue);
 
   // double trigger popup
   const handleWaitPeriodChange = (event) => {
@@ -111,10 +141,43 @@ const Canvas = () => {
       )
     );
   };
+  const handleChangeElementSelect = (event, setOptions) => {
+    const { value, name } = event.target;
+    setOptions((prevOptions) => ({
+      ...prevOptions,
+      [name]: value,
+    }));
+  };
+  const handleSaveElementsHeadingsPopup = (data) => {
+    console.log(data, 'data');
+    const label = mergeLabel ? mergeLabel : ` ${data?.subheading} `;
+    setNewLabel(label);
+    createConnection(label);
+    setMergeLabel(null);
+    // if (editableConnection) {
+    //   // Update existing connection
+    //   setConnections((conns) =>
+    //     conns.map((conn) =>
+    //       conn.id === editableConnection.id ? { ...conn, label } : conn
+    //     )
+    //   );
+    //   setEditableConnection(null);
+    // } else {
+    //   // Create new connection
+    //   createConnection(label);
+    // }
 
-  const handleSaveElementsHeadingsPopup = (heading) => {
     setElements((els) =>
-      els.map((el) => (el.id === popupContent.id ? { ...el, heading } : el))
+      els.map((el) => {
+        if (el.id === popupContent.id) {
+          return {
+            ...el,
+            heading: data?.heading,
+            subheading: data?.subheading,
+          };
+        }
+        return el;
+      })
     );
     setPopupVisible(false);
   };
@@ -206,6 +269,46 @@ const Canvas = () => {
     }
     setPopupVisible(false);
   };
+  const handleSaveSingleTrigger = () => {
+    if (popupContent.type === 'single-trigger') {
+      const newLabel = `wait for ${waitPeriod} ${waitDuration}`;
+      setMergeLabel(newLabel);
+      const newConnections = [];
+
+      if (selectedElement1) {
+        const connection1 = {
+          id: `${+new Date()}`,
+          source: popupContent.id, // Ensure source is set correctly
+          target: selectedElement1,
+          label: '', // Default label, you can customize this
+        };
+        newConnections.push(connection1);
+      }
+
+      if (selectedElement2) {
+        const connection2 = {
+          id: `${+new Date()}`,
+          source: popupContent.id, // Ensure source is set correctly
+          target: selectedElement2,
+          label: '', // Default label, you can customize this
+        };
+        newConnections.push(connection2);
+      }
+
+      setConnections((conns) => {
+        // Filter out any duplicate connections
+        const filteredConnections = conns.filter(
+          (conn) =>
+            !newConnections.some(
+              (newConn) =>
+                newConn.source === conn.source && newConn.target === conn.target
+            )
+        );
+        return [...filteredConnections, ...newConnections];
+      });
+    }
+    setPopupVisible(false);
+  };
 
   // Handle element click event to start or finish a connection
   const handleElementClick = (event, id) => {
@@ -270,7 +373,7 @@ const Canvas = () => {
         }
         if (
           sourceElement.type === 'double-trigger' &&
-          sourceConnections.length >= 1
+          sourceConnections.length >= 2
         ) {
           Swal.fire({
             icon: 'error',
@@ -334,43 +437,20 @@ const Canvas = () => {
     }
   };
   const createConnection = (label) => {
-    const newConnection = {
-      id: `${+new Date()}`,
-      source: connectingElement,
-      target: popupContent.id, // Ensure this is the target element's ID
-      label: label || 'wait One Week', // Default label, you can customize this
-    };
+    if (connectingElement) {
+      const newConnection = {
+        id: `${+new Date()}`,
+        source: connectingElement,
+        target: popupContent.id, // Ensure this is the target element's ID
+        label: label || 'wait One Week', // Default label, you can customize this
+      };
 
-    setConnections((conns) => [...conns, newConnection]);
-    setConnectingElement(null);
-    setIsConnecting(false);
-  };
-  const handleSaveSingleTrigger = () => {
-    if (popupContent.type === 'double-trigger') {
-      const newLabel = `wait for ${waitPeriod} ${waitDuration}`;
+      setConnections((conns) => [...conns, newConnection]);
+      setConnectingElement(null);
+      setIsConnecting(false);
     }
-    if (popupContent.type === 'single-trigger') {
-      const newConnections = [];
-      if (selectedElement1) {
-        newConnections.push({
-          id: `${+new Date()}`,
-          source: popupContent.id, // Ensure source is set correctly
-          target: selectedElement1,
-          label: ' ', // Default label, you can customize this
-        });
-      }
-      if (selectedElement2) {
-        newConnections.push({
-          id: `${+new Date()}`,
-          source: popupContent.id, // Ensure source is set correctly
-          target: selectedElement2,
-          label: ' ', // Default label, you can customize this
-        });
-      }
-      setConnections((conns) => [...conns, ...newConnections]);
-    }
-    setPopupVisible(false);
   };
+
   // Handle arrow click event to start a connection
   const handleArrowClick = (event, id) => {
     event.stopPropagation();
@@ -479,6 +559,8 @@ const Canvas = () => {
               <div className='tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-white'>
                 {popupContent?.type === 'double-trigger'
                   ? 'SWITCH'
+                  : popupContent?.type === 'single-trigger'
+                  ? 'MERGE'
                   : popupContent?.type.toUpperCase()}
               </div>
               <div
@@ -511,68 +593,414 @@ const Canvas = () => {
               <div>Heading: {popupContent?.heading}</div>
               <div>Subheading: {popupContent?.subheading}</div> */}
               {/* <button onClick={handleLabelSave}>Save</button> */}
-              {popupContent.type !== 'double-trigger' &&
-                popupContent.type !== 'single-trigger' && (
-                  <div className=''>
-                    <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
-                      <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
-                        Flow
-                      </div>
-                      <div>
-                        <FormControl style={{ minWidth: 525 }}>
-                          <Select
-                            fullWidth
-                            value={whatsappOptions}
-                            onChange={(e) =>
-                              handleChangeElementSelect(e, setWhatsappOptions)
-                            }
-                            MenuProps={MenuProps}
-                            style={{
-                              minWidth: '100% !important',
-                              height: '44px',
-                            }}
-                            displayEmpty
-                            renderValue={(selected) => {
-                              if (!selected) {
-                                return (
-                                  <span className='tw-text-[#667085]'>
-                                    Set group condition
-                                  </span>
-                                );
-                              }
-                              return selected; // Treat selected as a string
-                            }}
-                          >
-                            {whatsappOptionsStatic.map((name) => (
-                              <MenuItem key={name} value={name}>
-                                {name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </div>
+              {popupContent.type === 'whatsapp' && (
+                <div className=''>
+                  <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                    <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                      Flow
                     </div>
-                    {popupContent?.id !== elements[0]?.id && (
-                      <>
-                        {/* Conditionally render this section only if it's not the first element */}
-                        <div>
-                          <label>Additional Data:</label>
-                          <input type='text' />
-                        </div>
-                      </>
-                    )}
-                    <div className='tw-flex tw-justify-end tw-mt-4'>
-                      <div
-                        onClick={() =>
-                          handleSaveElementsHeadingsPopup(whatsappOptions)
-                        }
-                        className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
-                      >
-                        Save
-                      </div>
+                    <div>
+                      <FormControl style={{ minWidth: 525 }}>
+                        <Select
+                          fullWidth
+                          value={whatsappOptions?.heading}
+                          name='heading'
+                          onChange={(e) =>
+                            handleChangeElementSelect(e, setWhatsappOptions)
+                          }
+                          MenuProps={MenuProps}
+                          style={{
+                            minWidth: '100% !important',
+                            height: '44px',
+                          }}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return (
+                                <span className='tw-text-[#667085]'>
+                                  Set group condition
+                                </span>
+                              );
+                            }
+                            return selected; // Treat selected as a string
+                          }}
+                        >
+                          {whatsappOptionsStatic.map((name) => (
+                            <MenuItem key={name} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </div>
                   </div>
-                )}
+                  {popupContent?.id !== elements[0]?.id && (
+                    <>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          Target
+                        </div>
+                        <div>
+                          <FormControl style={{ minWidth: 525 }}>
+                            <Select
+                              fullWidth
+                              value={whatsappOptions?.subheading}
+                              name='subheading'
+                              onChange={(e) =>
+                                handleChangeElementSelect(e, setWhatsappOptions)
+                              }
+                              MenuProps={MenuProps}
+                              style={{
+                                minWidth: '100% !important',
+                                height: '44px',
+                              }}
+                              displayEmpty
+                              renderValue={(selected) => {
+                                if (!selected) {
+                                  return (
+                                    <span className='tw-text-[#667085]'>
+                                      Set group condition
+                                    </span>
+                                  );
+                                }
+                                return selected; // Treat selected as a string
+                              }}
+                            >
+                              {targetOptions.map((name) => (
+                                <MenuItem key={name} value={name}>
+                                  {name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          End
+                        </div>
+                        <Switch color='primary' />
+                      </div>
+                    </>
+                  )}
+                  <div className='tw-flex tw-justify-end tw-mt-4'>
+                    <div
+                      onClick={() =>
+                        handleSaveElementsHeadingsPopup(whatsappOptions)
+                      }
+                      className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+                    >
+                      Save
+                    </div>
+                  </div>
+                </div>
+              )}
+              {popupContent.type === 'google' && (
+                <div className=''>
+                  <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                    <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                      Flow
+                    </div>
+                    <div>
+                      <FormControl style={{ minWidth: 525 }}>
+                        <Select
+                          fullWidth
+                          value={googleOptions?.heading}
+                          name='heading'
+                          onChange={(e) =>
+                            handleChangeElementSelect(e, setGoogleOptions)
+                          }
+                          MenuProps={MenuProps}
+                          style={{
+                            minWidth: '100% !important',
+                            height: '44px',
+                          }}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return (
+                                <span className='tw-text-[#667085]'>
+                                  Set group condition
+                                </span>
+                              );
+                            }
+                            return selected; // Treat selected as a string
+                          }}
+                        >
+                          {googleOptionsStatic.map((name) => (
+                            <MenuItem key={name} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  </div>
+                  {popupContent?.id !== elements[0]?.id && (
+                    <>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          Target
+                        </div>
+                        <div>
+                          <FormControl style={{ minWidth: 525 }}>
+                            <Select
+                              fullWidth
+                              value={googleOptions?.subheading}
+                              name='subheading'
+                              onChange={(e) =>
+                                handleChangeElementSelect(e, setGoogleOptions)
+                              }
+                              MenuProps={MenuProps}
+                              style={{
+                                minWidth: '100% !important',
+                                height: '44px',
+                              }}
+                              displayEmpty
+                              renderValue={(selected) => {
+                                if (!selected) {
+                                  return (
+                                    <span className='tw-text-[#667085]'>
+                                      Set group condition
+                                    </span>
+                                  );
+                                }
+                                return selected; // Treat selected as a string
+                              }}
+                            >
+                              {targetOptions.map((name) => (
+                                <MenuItem key={name} value={name}>
+                                  {name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          End
+                        </div>
+                        <Switch color='primary' />
+                      </div>
+                    </>
+                  )}
+                  <div className='tw-flex tw-justify-end tw-mt-4'>
+                    <div
+                      onClick={() =>
+                        handleSaveElementsHeadingsPopup(googleOptions)
+                      }
+                      className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+                    >
+                      Save
+                    </div>
+                  </div>
+                </div>
+              )}
+              {popupContent.type === 'instagram' && (
+                <div className=''>
+                  <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                    <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                      Flow
+                    </div>
+                    <div>
+                      <FormControl style={{ minWidth: 525 }}>
+                        <Select
+                          fullWidth
+                          value={instaOptions?.heading}
+                          name='heading'
+                          onChange={(e) =>
+                            handleChangeElementSelect(e, setInstaOptions)
+                          }
+                          MenuProps={MenuProps}
+                          style={{
+                            minWidth: '100% !important',
+                            height: '44px',
+                          }}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return (
+                                <span className='tw-text-[#667085]'>
+                                  Set group condition
+                                </span>
+                              );
+                            }
+                            return selected; // Treat selected as a string
+                          }}
+                        >
+                          {instaOptionsStatic.map((name) => (
+                            <MenuItem key={name} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  </div>
+                  {popupContent?.id !== elements[0]?.id && (
+                    <>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          Target
+                        </div>
+                        <div>
+                          <FormControl style={{ minWidth: 525 }}>
+                            <Select
+                              fullWidth
+                              value={instaOptions?.subheading}
+                              name='subheading'
+                              onChange={(e) =>
+                                handleChangeElementSelect(e, setInstaOptions)
+                              }
+                              MenuProps={MenuProps}
+                              style={{
+                                minWidth: '100% !important',
+                                height: '44px',
+                              }}
+                              displayEmpty
+                              renderValue={(selected) => {
+                                if (!selected) {
+                                  return (
+                                    <span className='tw-text-[#667085]'>
+                                      Set group condition
+                                    </span>
+                                  );
+                                }
+                                return selected; // Treat selected as a string
+                              }}
+                            >
+                              {targetOptions.map((name) => (
+                                <MenuItem key={name} value={name}>
+                                  {name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          End
+                        </div>
+                        <Switch color='primary' />
+                      </div>
+                    </>
+                  )}
+                  <div className='tw-flex tw-justify-end tw-mt-4'>
+                    <div
+                      onClick={() =>
+                        handleSaveElementsHeadingsPopup(instaOptions)
+                      }
+                      className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+                    >
+                      Save
+                    </div>
+                  </div>
+                </div>
+              )}
+              {popupContent.type === 'email' && (
+                <div className=''>
+                  <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                    <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                      Flow
+                    </div>
+                    <div>
+                      <FormControl style={{ minWidth: 525 }}>
+                        <Select
+                          fullWidth
+                          value={emailOptions?.heading}
+                          name='heading'
+                          onChange={(e) =>
+                            handleChangeElementSelect(e, setEmailOptions)
+                          }
+                          MenuProps={MenuProps}
+                          style={{
+                            minWidth: '100% !important',
+                            height: '44px',
+                          }}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return (
+                                <span className='tw-text-[#667085]'>
+                                  Set group condition
+                                </span>
+                              );
+                            }
+                            return selected; // Treat selected as a string
+                          }}
+                        >
+                          {emailOptionsStatic.map((name) => (
+                            <MenuItem key={name} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  </div>
+                  {popupContent?.id !== elements[0]?.id && (
+                    <>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          Target
+                        </div>
+                        <div>
+                          <FormControl style={{ minWidth: 525 }}>
+                            <Select
+                              fullWidth
+                              value={emailOptions?.subheading}
+                              name='subheading'
+                              onChange={(e) =>
+                                handleChangeElementSelect(e, setEmailOptions)
+                              }
+                              MenuProps={MenuProps}
+                              style={{
+                                minWidth: '100% !important',
+                                height: '44px',
+                              }}
+                              displayEmpty
+                              renderValue={(selected) => {
+                                if (!selected) {
+                                  return (
+                                    <span className='tw-text-[#667085]'>
+                                      Set group condition
+                                    </span>
+                                  );
+                                }
+                                return selected; // Treat selected as a string
+                              }}
+                            >
+                              {targetOptions.map((name) => (
+                                <MenuItem key={name} value={name}>
+                                  {name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                        <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                          End
+                        </div>
+                        <Switch color='primary' />
+                      </div>
+                    </>
+                  )}
+                  <div className='tw-flex tw-justify-end tw-mt-4'>
+                    <div
+                      onClick={() =>
+                        handleSaveElementsHeadingsPopup(emailOptions)
+                      }
+                      className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+                    >
+                      Save
+                    </div>
+                  </div>
+                </div>
+              )}
               {popupContent.type === 'double-trigger' && (
                 <div className=''>
                   <div className='tw-text-base  tw-whitespace-nowrap tw-font-semibold  tw-leading-6 tw-text-left tw-text-[#0b1424]'>
@@ -730,47 +1158,291 @@ const Canvas = () => {
               )}
               {popupContent.type === 'single-trigger' && (
                 <>
-                  <div>
-                    <label>Select Element 1:</label>
-                    <select
-                      value={selectedElement1}
-                      onChange={(e) => setSelectedElement1(e.target.value)}
-                    >
-                      <option value=''>Select an element</option>
-                      {elements
-                        .filter(
-                          (el) =>
-                            el.id !== popupContent.id &&
-                            el.id !== selectedElement2
-                        )
-                        .map((el) => (
-                          <option key={el.id} value={el.id}>
-                            {el.heading}
-                          </option>
-                        ))}
-                    </select>
+                  <div className='content tw-p-4 tw-flex tw-flex-col tw-gap-4'>
+                    <div className='tw-text-base tw-font-medium tw-leading-6 tw-text-left tw-text-black'>
+                      Schedule Merge
+                    </div>
+                    <div className='tw-flex tw-mt-2 tw-gap-4 tw-items-center'>
+                      <div className='tw-text-base tw-min-w-[180px]  tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                        Wait Period
+                      </div>
+                      <div>
+                        <TextField
+                          className='tw-w-[420px] '
+                          placeholder='Enter wait Period'
+                          value={waitPeriod}
+                          onChange={handleWaitPeriodChange}
+                          InputProps={{
+                            style: { height: '46px', marginTop: '3px' },
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 120 }}>
+                          <Select
+                            fullWidth
+                            value={waitDuration}
+                            onChange={handleWaitDurationChange}
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>
+                                    Set wait period
+                                  </span>
+                                );
+                              }
+                              return selected; // Treat selected as a string
+                            }}
+                          >
+                            {durations.map((name) => (
+                              <MenuItem key={name} value={name}>
+                                {name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className='tw-flex tw-gap-4 tw-items-center'>
+                      <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                        Flow 1
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 600 }}>
+                          <Select
+                            fullWidth
+                            value={selectedElement1}
+                            onChange={(e) =>
+                              setSelectedElement1(e.target.value)
+                            }
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>
+                                    Email- Appoitnment-3
+                                  </span>
+                                );
+                              }
+                              return selected;
+                            }}
+                          >
+                            {elements
+                              .filter(
+                                (el) =>
+                                  el.id !== popupContent.id &&
+                                  el.id !== selectedElement2
+                              )
+                              .map((el) => (
+                                <MenuItem key={el.id} value={el.id}>
+                                  {el.heading}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </div>
+
+                    <div className='tw-flex tw-gap-4 tw-items-center'>
+                      <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                        Filter Audience ,where
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 166 }}>
+                          <Select
+                            fullWidth
+                            // value={personName}
+                            // onChange={handleChange}
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>
+                                    Free_code4
+                                  </span>
+                                );
+                              }
+                              return selected;
+                            }}
+                          >
+                            {names.map((name) => (
+                              <MenuItem key={name} value={name}>
+                                {name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 166 }}>
+                          <Select
+                            fullWidth
+                            // value={personName}
+                            // onChange={handleChange}
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>
+                                    Equals
+                                  </span>
+                                );
+                              }
+                              return selected;
+                            }}
+                          >
+                            {names.map((name) => (
+                              <MenuItem key={name} value={name}>
+                                {name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 120 }}>
+                          <Select
+                            fullWidth
+                            // value={personName}
+                            // onChange={handleChange}
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>Yes</span>
+                                );
+                              }
+                              return selected;
+                            }}
+                          >
+                            {names.map((name) => (
+                              <MenuItem key={name} value={name}>
+                                {name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div className='tw-w-10 hover:tw-cursor-pointer tw-grid tw-place-content-center tw-h-11 tw-gap-2.5 tw-border tw-p-1.5 tw-rounded-lg tw-border-solid tw-border-[#D0D5DD]'>
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 16 16'
+                          fill='none'
+                          xmlns='http://www.w3.org/2000/svg'
+                        >
+                          <path
+                            d='M8 1V15M1 8H15'
+                            stroke='#667085'
+                            stroke-width='2'
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                          />
+                        </svg>
+                      </div>
+                      <div className='tw-w-10 hover:tw-cursor-pointer tw-grid tw-place-content-center tw-h-11 tw-gap-2.5 tw-border tw-p-1.5 tw-rounded-lg tw-border-solid tw-border-[#D0D5DD]'>
+                        <svg
+                          width='20'
+                          height='20'
+                          viewBox='0 0 20 20'
+                          fill='none'
+                          xmlns='http://www.w3.org/2000/svg'
+                        >
+                          <path
+                            d='M7 1H13M1 4H19M17 4L16.2987 14.5193C16.1935 16.0975 16.1409 16.8867 15.8 17.485C15.4999 18.0118 15.0472 18.4353 14.5017 18.6997C13.882 19 13.0911 19 11.5093 19H8.49065C6.90891 19 6.11803 19 5.49834 18.6997C4.95276 18.4353 4.50009 18.0118 4.19998 17.485C3.85911 16.8867 3.8065 16.0975 3.70129 14.5193L3 4M8 8.5V13.5M12 8.5V13.5'
+                            stroke='#667085'
+                            stroke-width='2'
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className='tw-flex tw-gap-4 tw-items-center'>
+                      <div className='tw-text-base tw-min-w-[180px] tw-whitespace-nowrap tw-font-medium tw-leading-6 tw-text-left tw-text-[#344054]'>
+                        Flow 2
+                      </div>
+                      <div>
+                        <FormControl style={{ minWidth: 600 }}>
+                          <Select
+                            fullWidth
+                            value={selectedElement2}
+                            onChange={(e) =>
+                              setSelectedElement2(e.target.value)
+                            }
+                            MenuProps={MenuProps}
+                            style={{
+                              minWidth: '100% !important',
+                              height: '44px',
+                            }}
+                            displayEmpty
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return (
+                                  <span className='tw-text-[#667085]'>
+                                    Email- Appoitnment-3
+                                  </span>
+                                );
+                              }
+                              return selected;
+                            }}
+                          >
+                            {elements
+                              .filter(
+                                (el) =>
+                                  el.id !== popupContent.id &&
+                                  el.id !== selectedElement2
+                              )
+                              .map((el) => (
+                                <MenuItem key={el.id} value={el.id}>
+                                  {el.heading}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className='tw-flex tw-gap-4 tw-justify-end'>
+                      <div
+                        onClick={() => setPopupVisible(false)}
+                        className='tw-w-[111px] tw-grid tw-place-content-center  tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left tw-text-[#021133] tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] hover:tw-bg-[#021133] hover:tw-text-emerald-50 hover:tw-cursor-pointer'
+                      >
+                        Discard
+                      </div>
+                      <div
+                        onClick={() => handleSaveSingleTrigger()}
+                        className='tw-w-[111px] tw-grid tw-place-content-center tw-h-11 tw-gap-3 tw-border tw-text-lg tw-font-medium tw-leading-5 tw-text-left  tw-px-4 tw-py-3.5 tw-rounded-lg tw-border-solid tw-border-[#021133] tw-bg-[#021133] tw-text-emerald-50 hover:tw-cursor-pointer'
+                      >
+                        Save
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label>Select Element 2:</label>
-                    <select
-                      value={selectedElement2}
-                      onChange={(e) => setSelectedElement2(e.target.value)}
-                    >
-                      <option value=''>Select an element</option>
-                      {elements
-                        .filter(
-                          (el) =>
-                            el.id !== popupContent.id &&
-                            el.id !== selectedElement1
-                        )
-                        .map((el) => (
-                          <option key={el.id} value={el.id}>
-                            {el.heading}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  <button onClick={handleSaveSingleTrigger}>Save</button>
                 </>
               )}
             </div>
@@ -873,7 +1545,11 @@ const Canvas = () => {
           onClick={(event) => handleElementClick(event, element.id)}
           className='parent'
           style={{
-            minWidth: '149.42px',
+            minWidth:
+              element.type === 'double-trigger' ||
+              element.type === 'single-trigger'
+                ? '60px'
+                : '149.42px',
             position: 'absolute',
             left: element.position.x,
             top: element.position.y,
@@ -884,6 +1560,11 @@ const Canvas = () => {
             cursor: 'move',
             zIndex: 2, // Set z-index higher than connections
             display: 'flex',
+            flexDirection:
+              element.type === 'double-trigger' ||
+              element.type === 'single-trigger'
+                ? 'column'
+                : 'row',
             alignItems: 'center',
             gap: '8px',
             border: '0.9px solid',
@@ -895,13 +1576,13 @@ const Canvas = () => {
           <div style={{ fontSize: '24px' }}>{element.icon}</div>
           <div>
             <div
-              onDoubleClick={(event) =>
-                handleDoubleClick(event, element.id, 'heading')
-              }
-              contentEditable={
-                editableElement?.id === element.id &&
-                editableElement?.field === 'heading'
-              }
+              // onDoubleClick={(event) =>
+              //   handleDoubleClick(event, element.id, 'heading')
+              // }
+              // contentEditable={
+              //   editableElement?.id === element.id &&
+              //   editableElement?.field === 'heading'
+              // }
               suppressContentEditableWarning
               onBlur={handleBlur}
               style={{
@@ -915,31 +1596,38 @@ const Canvas = () => {
                   editableElement?.id === element.id ? 'text' : 'none', // Allow text selection only when editing
               }}
             >
-              {element.heading}
+              {element.type === 'double-trigger'
+                ? 'Switch'
+                : element.type === 'single-trigger'
+                ? 'Merge'
+                : element.heading}
             </div>
-            <div
-              onDoubleClick={(event) =>
-                handleDoubleClick(event, element.id, 'subheading')
-              }
-              contentEditable={
-                editableElement?.id === element.id &&
-                editableElement?.field === 'subheading'
-              }
-              suppressContentEditableWarning
-              onBlur={handleBlur}
-              style={{
-                fontFamily: 'Poppins',
-                fontSize: '9px',
-                fontWeight: 500,
-                lineHeight: '13.5px',
-                textAlign: 'left',
-                color: '#475467',
-                userSelect:
-                  editableElement?.id === element.id ? 'text' : 'none', // Allow text selection only when editing
-              }}
-            >
-              {element.subheading}
-            </div>
+            {element.type !== 'double-trigger' &&
+              element.type !== 'single-trigger' && (
+                <div
+                  // onDoubleClick={(event) =>
+                  //   handleDoubleClick(event, element.id, 'subheading')
+                  // }
+                  // contentEditable={
+                  //   editableElement?.id === element.id &&
+                  //   editableElement?.field === 'subheading'
+                  // }
+                  suppressContentEditableWarning
+                  onBlur={handleBlur}
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: '9px',
+                    fontWeight: 500,
+                    lineHeight: '13.5px',
+                    textAlign: 'left',
+                    color: '#475467',
+                    userSelect:
+                      editableElement?.id === element.id ? 'text' : 'none', // Allow text selection only when editing
+                  }}
+                >
+                  {element.subheading}
+                </div>
+              )}
           </div>
           <div
             onClick={(event) => handleArrowClick(event, element.id)}
