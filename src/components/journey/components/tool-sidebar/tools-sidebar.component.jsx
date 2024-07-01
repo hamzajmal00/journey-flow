@@ -74,6 +74,7 @@ export default function ToolsSidebar({ mergePopUpHandler }) {
         <div
           draggable
           onDragStart={(event) => handleDragStart(event, 'double-trigger')}
+          className='hover:tw-bg-[#0081B0]'
           style={{
             padding: '8px',
             margin: '4px',
@@ -86,6 +87,7 @@ export default function ToolsSidebar({ mergePopUpHandler }) {
           draggable
           onDragStart={(event) => handleDragStart(event, 'single-trigger')}
           // onClick={() => mergePopUpHandler()}
+          className='hover:tw-bg-[#0081B0]'
           style={{
             padding: '8px',
             margin: '4px',
@@ -104,6 +106,7 @@ export default function ToolsSidebar({ mergePopUpHandler }) {
           key={item}
           draggable
           onDragStart={(event) => handleDragStart(event, item.name)}
+          className='hover:tw-bg-[#0081B0] hover:!tw-pl-3'
           style={{
             padding: '8px',
             margin: '4px',
