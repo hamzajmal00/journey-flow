@@ -55,7 +55,7 @@ export default function ToolsSidebar({ mergePopUpHandler }) {
     <div
       style={{
         width: '82px',
-        height: '609px',
+        // height: '609px',
         padding: '16px 12px 16px 12px',
         gap: '10px',
         borderRadius: '16px 0px 0px 16px',
